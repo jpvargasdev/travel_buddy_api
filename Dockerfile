@@ -6,8 +6,8 @@ COPY requirements.txt requirements.txt
 
 RUN pip3 install -r requirements.txt
 
-EXPOSE 80/tcp
+EXPOSE 5000/tcp
 
 COPY . .
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
