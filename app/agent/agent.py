@@ -3,6 +3,7 @@ import json
 
 from typing import Dict, List, Any, Tuple
 
+from langchain import PromptTemplate
 from langchain.tools import BaseTool
 
 from langchain.chains.retrieval_qa.base import BaseRetrievalQA
@@ -11,7 +12,7 @@ from langchain.agents import AgentType, Tool, initialize_agent, load_tools
 from langchain.callbacks import FinalStreamingStdOutCallbackHandler
 from langchain.memory import ConversationBufferMemory
 
-from app.agent.customtools.files_handler_tool import tool_add_row_to_csv, tool_create_csv_file, tool_delete_csv_file, tools_default_file_management
+from app.agent.customtools.files_handler_tool import tool_add_row_to_csv, tool_create_csv_file, tool_delete_csv_file, tools_default_file_management, tool_get_current_date
 
 LLM_CHAT = "gpt-3.5-turbo"
 
@@ -31,6 +32,22 @@ stream_handler = CustomStreamingStdOutCallbackHandler()
 
 class Agent:
     def __init__(self):
+        template = """The following is a friendly conversation between a human and an AI travel assistant. The AI is talkative and provides lots of specific details from its context.
+            If the AI does not know the answer to a question, it truthfully says it does not know. 
+
+
+            {chat_history}
+            Current conversation
+            {chat_history}
+
+            Human: {input}
+            AI trael assistant:"""
+
+        prompt = PromptTemplate(
+                input_variables=["chat_history", "input"],
+                template=template,
+                )
+
         memory = ConversationBufferMemory(
                 memory_key="chat_history",
                 return_messages=True,
@@ -45,10 +62,8 @@ class Agent:
                 streaming=True,
                 callbacks=[stream_handler]
                 )
-
-        # Tools to charge in each agent
-        tools = self._init_tools()
         # Agent initialization
+        tools = self._init_tools()
 
         # CHATGPT Agent
         self.agent_adv = initialize_agent(
@@ -58,6 +73,7 @@ class Agent:
                 verbose=True,
                 memory=memory,
                 return_intermediate_steps=True,
+                prompt=prompt,
                 )
 
    
@@ -78,18 +94,33 @@ class Agent:
                 Tool(
                     name="Create CSV",
                     func=tool_create_csv_file.run,
-                    description="Useful when you need to create a csv file, the tool receives two parameters, the first one is the name of the file and the second one is an array of strings, both are mandatory, and both parameters as a single string"
+                    description="""
+                        Useful when you need to create a csv file,
+                        the tool receives two parameters, the first one is the name of the file and the second one is an array of strings,
+                        both are mandatory, and both parameters as a single string.
+                        """
                     ),
                 Tool(
                     name="Add row to CSV",
                     func=tool_add_row_to_csv.run,
-                    description="Useful when you need to edit a csv file, the tool receives two parameters, the first one is the name of the file and the second one is an array of strings or just empty value, which are the items of the row, both are mandatory, and both parameters as single string"
+                    description="""
+                        Useful when you need to edit a csv file,
+                        the tool receives two parameters,
+                        the first one is the name of the file and the second one is an array of strings or just empty value,
+                        which are the items of the row, both are mandatory, and both parameters as single string. At the end of the second paramenter
+                        you will add the current date using the current date function. 
+                        """
                     ),
                 Tool(
                     name="Delete CSV",
                     func=tool_delete_csv_file.run,
-                    description="Useful when you need to delete a csv file, one parameter, the csvfile name"
+                    description="""Useful when you need to delete a csv file, one parameter, the csvfile name"""
                     ),
+                Tool(
+                    name="Get current Date",
+                    func=tool_get_current_date.run,
+                    description="""Useful when u need to get the current date"""
+                    )
                 ]
 
         tools = tools + custom_tools + tools_default_file_management

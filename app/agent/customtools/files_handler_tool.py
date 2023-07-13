@@ -1,6 +1,8 @@
 import csv
 import os
 
+from datetime import date
+
 from langchain.tools import StructuredTool
 from langchain.tools.file_management import (
     ReadFileTool,
@@ -54,6 +56,17 @@ def charge_csv(
             qa = charge_csv(csv_name=csv_name)
             return ""
 
+def get_current_date() -> str:
+    today = date.today()
+    now = today.strftime("%B %d, %Y")
+
+    print(now)
+    return ""
+
+tool_get_current_date = StructuredTool.from_function(
+        get_current_date,
+        description="Get current date"
+        )
 
 tool_create_csv_file = StructuredTool.from_function(
         create_csv_file,
