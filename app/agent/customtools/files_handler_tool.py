@@ -60,8 +60,7 @@ def get_current_date() -> str:
     today = date.today()
     now = today.strftime("%B %d, %Y")
 
-    print(now)
-    return ""
+    return now
 
 tool_get_current_date = StructuredTool.from_function(
         get_current_date,

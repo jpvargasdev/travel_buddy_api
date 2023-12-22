@@ -24,6 +24,16 @@ class Message(BaseModel):
 async def get_models():
     return chat.getModels()
 
+@app.get("/chat/greetings")
+async def greetings():
+    def generate_text(message: str):
+        for i in agent.conversation_chat(message):
+            yield i.encode("utf-8")
+    
+    response = generate_text('Hola, Cómo estás el día de hoy?')
+
+    return StreamingResponse(response, media_type="text/plain")
+
 @app.post("/chat/message")
 def call_agent(message: Message):
     def generate_text(message: str):

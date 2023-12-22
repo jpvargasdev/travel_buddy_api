@@ -105,10 +105,11 @@ class Agent:
                     func=tool_add_row_to_csv.run,
                     description="""
                         Useful when you need to edit a csv file,
-                        the tool receives two parameters,
+                        First you need to get the current date,
+                        Second, the tool receives two parameters,
                         the first one is the name of the file and the second one is an array of strings or just empty value,
                         which are the items of the row, both are mandatory, and both parameters as single string. At the end of the second paramenter
-                        you will add the current date using the current date function. 
+                        you will add the current date. 
                         """
                     ),
                 Tool(
